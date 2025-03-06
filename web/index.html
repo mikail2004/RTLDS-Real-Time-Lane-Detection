@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTLDS</title>
+</head>
+<body>
+    <h1> RTLDS </h1>
+
+    <form action="/success" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <input type="submit" value="Upload Image">
+    </form>
+
+    <form action="/success2" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <input type="submit" value="Upload Video">
+    </form>
+
+    <form action="/live_feed" method="post" enctype="multipart/form-data">
+        <input type="submit" value="Live Feed">
+    </form>
+
+    <img src="{{ url_for('static', filename='hold/'+imageURL)}}" alt="Image Feed"/>
+
+    <video width="650" height="350" controls muted>
+        <source src="{{ url_for('static', filename='hold/'+videoURL)}}" type="video/mp4">
+    </video>
+
+    <img src="{{ url_for('live_feed') }}" alt="Live Feed">
+
+</body>
+</html>
