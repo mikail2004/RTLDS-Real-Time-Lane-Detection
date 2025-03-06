@@ -79,7 +79,8 @@ def calcCoords(image, lineParameters):
 # -- Accessing and Applying Image Processing -- 
 def imageProcessor(inputIMG):
     image = cv2.imread(inputIMG) # Reads image and returns it as a multi-dimensional numPy array containing pixel intensities.
-    laneImageCopy = np.copy(image) # Copying image array || Keep original separate from the one we will process.
+    imageResize = cv2.resize(image, (1279, 704))
+    laneImageCopy = np.copy(imageResize) # Copying image array || Keep original separate from the one we will process.
     imageGS = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY) # Converting image (laneImageCopy) to grayscale. 
     imageBlur = cv2.GaussianBlur(imageGS, (5,5), 0) # Gaussian blur to reduce noise w/ 5x5 Kernel and deviation of 0.
     imageCanny = cv2.Canny(imageBlur, 50, 150) # Executing Canny function with thresholds b/w 50 and 150.
@@ -105,7 +106,7 @@ def videoProcessor(videoSRC):
         # Breaks loop if no more frames (If video is over)
         if not ret or frame is None:
             break
-
+        
         imageCanny = cv2.Canny(frame, 50, 150)
         maskedIMGFinal = polygonMask(imageCanny) 
         createLineMarkings = cv2.HoughLinesP(maskedIMGFinal, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5) 
@@ -119,6 +120,37 @@ def videoProcessor(videoSRC):
             break
 
     capture.release()
+    cv2.destroyAllWindows() # To remove all memory caches of the capture.
+
+# -- Video Processing for Web Clients (Flask) -- 
+def videoProcessorWeb(videoSRC, savePath):
+    capture = cv2.VideoCapture(videoSRC) 
+
+    # Getting original video fps and frame height, width
+    fps = int(capture.get(cv2.CAP_PROP_FPS))
+    size = (int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)), int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))) # Tuple of 2
+
+    # Creating a new video using CV2 and the processed frames
+    # Use codec 'h.264' to be compatible with the web
+    videoProcessed = cv2.VideoWriter(savePath, cv2.VideoWriter_fourcc(*'h264'), fps, size)
+
+    while(capture.isOpened()): 
+        ret, frame = capture.read() 
+
+        if not ret or frame is None:
+            break
+        
+        imageCanny = cv2.Canny(frame, 50, 150)
+        maskedIMGFinal = polygonMask(imageCanny) 
+        createLineMarkings = cv2.HoughLinesP(maskedIMGFinal, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5) 
+        averageLineMarkings = avgIntercept(frame, createLineMarkings) 
+        lineImage = displayMarkings(frame, averageLineMarkings) 
+        mergedImage = cv2.addWeighted(frame, 0.8, lineImage, 1, 1) 
+
+        videoProcessed.write(mergedImage) # Writes each frame to the new video
+
+    capture.release()
+    videoProcessed.release() # Once all frames are added via loop, video is finalized and saved
     cv2.destroyAllWindows() # To remove all memory caches of the capture.
 
 if __name__ == "__main__":
