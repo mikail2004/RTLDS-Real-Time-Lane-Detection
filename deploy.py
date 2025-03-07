@@ -55,7 +55,7 @@ def successVideo():
 # Response (Without re-route to page) for live camera feed
 @app.route("/live_feed", methods=['POST'])
 def successLive():
-    return Response()
+    return Response(LD.processFrames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -5,6 +5,31 @@ import cv2 # From full package [opencv-contrib-python]
 import numpy as np
 import matplotlib.pyplot as plt
 
+def processFrames():
+    camera = cv2.VideoCapture(0)
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        else:
+            size = frame.shape # Shape gives height [0], width [1], channel [2]
+            imageResize = cv2.resize(frame, (1279, 704))
+
+            imageCanny = cv2.Canny(imageResize, 50, 150)
+            maskedIMGFinal = polygonMask(imageCanny)
+            createLineMarkings = cv2.HoughLinesP(maskedIMGFinal, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5) 
+            # print(createLineMarkings)
+            averageLineMarkings = avgIntercept(imageResize, createLineMarkings) 
+            lineImage = displayMarkings(imageResize, averageLineMarkings) 
+            frameFinal = cv2.addWeighted(imageResize, 0.8, lineImage, 1, 1) 
+
+            #frameFinal = cv2.resize(frameFinal, (size[1], size[0]))
+
+            ret, buffer = cv2.imencode('.jpg', frameFinal)
+            frameFinal = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frameFinal + b'\r\n')
+
 # -- Creating a Mask Outlining Region of Interest -- 
 def polygonMask(image):
     height = image.shape[0] # Getting height (no.of rows) using shape of the image array.
@@ -24,9 +49,13 @@ def displayMarkings(image, lines):
     linesMask = np.zeros_like(image) # Creates black image with same dimensions as original image
     if lines is not None:
         for line in lines:
+        
             x1, y1, x2, y2 = line # Line array unpacked into 4 coordinates of start and end positions
+            # x1 = np.array(x1,dtype=np.int64)
+            # x2 = np.array(x2,dtype=np.int64)
+            print("x1",x1,"x2",x2)
             # On an image, draws a line segment by connecting two points with RGB color and thickness. 
-            cv2.line(linesMask, (x1, y1), (x2,y2), (255, 0, 0), 10)
+            cv2.line(linesMask, (x1, y1), (x2, y2), (255, 0, 0), 10)
     return linesMask # Returns black image but with line markings.
 
 # -- Optimizating by Averaging Line Markers --
@@ -35,19 +64,21 @@ def avgIntercept(image, lines):
     # Record the slopes and intercepts (m and c) of each line depending on the side as a list
     leftFit = [] # Slopes and intercepts (m and c) of the left side of the lane
     rightFit = [] # Slopes and intercepts (m and c) of the left side of the lane
-    for line in lines:
-        x1, y1, x2, y2 = line.reshape(4) # Unpacking coordinates of each line
-        # Polynomial of degree 1, Uses coordinates of a line to return vector describing slope and y-intercept
-        parameters = np.polyfit((x1, x2), (y1, y2), 1)
-        slope, intercept = parameters[0], parameters[1] # As slope is at the first index of the returned vector <parameters>
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line.reshape(4) # Unpacking coordinates of each line
+            # Polynomial of degree 1, Uses coordinates of a line to return vector describing slope and y-intercept
+            parameters = np.polyfit((x1, x2), (y1, y2), 1)
+            print(parameters)
+            slope, intercept = parameters[0], parameters[1] # As slope is at the first index of the returned vector <parameters>
 
-        # To see if the slope/intercept returned is of the right side of the lane or left.
-        # Lines on the left will have a negative slope (m<0)
-        # Lines on the right will have a positive slope (m>0)
-        if slope < 0: 
-            leftFit.append((slope, intercept))
-        else:
-            rightFit.append((slope, intercept))
+            # To see if the slope/intercept returned is of the right side of the lane or left.
+            # Lines on the left will have a negative slope (m<0)
+            # Lines on the right will have a positive slope (m>0)
+            if slope < 0: 
+                leftFit.append((slope, intercept))
+            else:
+                rightFit.append((slope, intercept))
 
     # Average out all intercepts and slopes of each side of the lane:
     leftFitAvg = np.average(leftFit, axis=0) if leftFit else None
@@ -61,19 +92,24 @@ def avgIntercept(image, lines):
 
 # -- Calculate Coordinates for Optimization Averaging Function --
 def calcCoords(image, lineParameters):
+    if abs(lineParameters[0]) < 10**(-3):
+        return None
     # Making sure there are no errors if a lane on either side has not been detected
-    if lineParameters is None or not isinstance(lineParameters, (list, tuple, np.ndarray)):
+    elif lineParameters is None or not isinstance(lineParameters, (list, tuple, np.ndarray)):
         return None  # Return None if no valid line parameters
-    if isinstance(lineParameters, np.ndarray) and lineParameters.size == 2:
+    elif isinstance(lineParameters, np.ndarray) and lineParameters.size == 2:
         slope, intercept = lineParameters
     else:
-        return None 
+        return None  
 
     # Finding Coordinates needed to draw lane line using averaged out slope and intercept (y=mx+c)
     y1 = image.shape[0] # Fixing minimum height to 0 (starting point of the image height).
     y2 = int(y1*3/5) # Fixing maximum height (based on image height) to be about 3/5th the image height.
-    x1 = int((y1 - intercept)/slope)
-    x2 = int((y2 - intercept)/slope)
+    x1 = int((y1 - intercept)/(slope + 10**(-8)))
+    x2 = int((y2 - intercept)/(slope + 10**(-8)))
+    if x1 > 100000:
+        import pdb; pdb.set_trace()
+
     return np.array([x1, y1, x2, y2])
 
 # -- Accessing and Applying Image Processing -- 
