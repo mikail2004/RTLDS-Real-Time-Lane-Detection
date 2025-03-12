@@ -8,18 +8,20 @@
 <body>
     <h1> RTLDS </h1>
 
-    <form action="/success" method="post" enctype="multipart/form-data">
+    <form action="/imageUpload" method="post" enctype="multipart/form-data">
         <input type="file" name="file" />
         <input type="submit" value="Upload Image">
     </form>
 
-    <form action="/success2" method="post" enctype="multipart/form-data">
+    <form action="/videoUpload" method="post" enctype="multipart/form-data">
         <input type="file" name="file" />
         <input type="submit" value="Upload Video">
     </form>
 
-    <form action="/live_feed" method="post" enctype="multipart/form-data">
-        <input type="submit" value="Live Feed">
+    <button onclick="startLiveFeed()">Live Feed</button>
+
+    <form action="/clearData" method="post" enctype="multipart/form-data">
+        <input type="submit" value="Clear Data">
     </form>
 
     <img src="{{ url_for('static', filename='hold/'+imageURL)}}" alt="Image Feed"/>
@@ -28,7 +30,13 @@
         <source src="{{ url_for('static', filename='hold/'+videoURL)}}" type="video/mp4">
     </video>
 
-    <img src="{{ url_for('live_feed') }}" alt="Live Feed">
+    <!-- Use src="{{ url_for('successLive') }}" if you want to use [POST]-->
+    <img id="liveFeedCanvas" width="650" height="350" src="" alt="Live Feed"/>
 
+    <script>
+        function startLiveFeed(){
+            document.getElementById('liveFeedCanvas').src = '/liveFeed';
+        }
+    </script>
 </body>
 </html>

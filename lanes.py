@@ -4,6 +4,9 @@
 import cv2 # From full package [opencv-contrib-python]
 import numpy as np
 import matplotlib.pyplot as plt
+import pdb
+
+# Use for debugging to search for extreme values --> pdb.set_trace()
 
 def processFrames():
     camera = cv2.VideoCapture(0)
@@ -12,21 +15,20 @@ def processFrames():
         if not success:
             break
         else:
-            size = frame.shape # Shape gives height [0], width [1], channel [2]
             imageResize = cv2.resize(frame, (1279, 704))
-
             imageCanny = cv2.Canny(imageResize, 50, 150)
             maskedIMGFinal = polygonMask(imageCanny)
             createLineMarkings = cv2.HoughLinesP(maskedIMGFinal, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5) 
-            # print(createLineMarkings)
             averageLineMarkings = avgIntercept(imageResize, createLineMarkings) 
             lineImage = displayMarkings(imageResize, averageLineMarkings) 
             frameFinal = cv2.addWeighted(imageResize, 0.8, lineImage, 1, 1) 
 
-            #frameFinal = cv2.resize(frameFinal, (size[1], size[0]))
-
+            # <cv2.imread()> encodes (compresses) image to memory instead of file.
             ret, buffer = cv2.imencode('.jpg', frameFinal)
             frameFinal = buffer.tobytes()
+
+            # Streaming using <yield>
+            # Is a technique in which the server provides the response to a request in chunks (real-time)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frameFinal + b'\r\n')
 
@@ -49,11 +51,7 @@ def displayMarkings(image, lines):
     linesMask = np.zeros_like(image) # Creates black image with same dimensions as original image
     if lines is not None:
         for line in lines:
-        
-            x1, y1, x2, y2 = line # Line array unpacked into 4 coordinates of start and end positions
-            # x1 = np.array(x1,dtype=np.int64)
-            # x2 = np.array(x2,dtype=np.int64)
-            print("x1",x1,"x2",x2)
+            x1, y1, x2, y2 = line # Line array unpacked into 4 coordinates of start and end positions.
             # On an image, draws a line segment by connecting two points with RGB color and thickness. 
             cv2.line(linesMask, (x1, y1), (x2, y2), (255, 0, 0), 10)
     return linesMask # Returns black image but with line markings.
@@ -69,7 +67,6 @@ def avgIntercept(image, lines):
             x1, y1, x2, y2 = line.reshape(4) # Unpacking coordinates of each line
             # Polynomial of degree 1, Uses coordinates of a line to return vector describing slope and y-intercept
             parameters = np.polyfit((x1, x2), (y1, y2), 1)
-            print(parameters)
             slope, intercept = parameters[0], parameters[1] # As slope is at the first index of the returned vector <parameters>
 
             # To see if the slope/intercept returned is of the right side of the lane or left.
@@ -92,6 +89,8 @@ def avgIntercept(image, lines):
 
 # -- Calculate Coordinates for Optimization Averaging Function --
 def calcCoords(image, lineParameters):
+    # First thing to check is whether line slope is valid
+    # Making sure line is not vertical or horiztonal (0 or infinite slope, causing crash)
     if abs(lineParameters[0]) < 10**(-3):
         return None
     # Making sure there are no errors if a lane on either side has not been detected
@@ -107,8 +106,6 @@ def calcCoords(image, lineParameters):
     y2 = int(y1*3/5) # Fixing maximum height (based on image height) to be about 3/5th the image height.
     x1 = int((y1 - intercept)/(slope + 10**(-8)))
     x2 = int((y2 - intercept)/(slope + 10**(-8)))
-    if x1 > 100000:
-        import pdb; pdb.set_trace()
 
     return np.array([x1, y1, x2, y2])
 
