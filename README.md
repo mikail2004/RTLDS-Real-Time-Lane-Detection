@@ -11,9 +11,14 @@ Computer Vision is made up of several methodologies to analyze and derive inform
 
 ## Pre-requisites
 Flask                 3.0.3
+
 Jinja2                3.1.5
+
 matplotlib            3.7.5
+
 numpy                 1.24.4
+
 opencv-contrib-python 4.11.0.86
+
 pillow                10.4.0
 
