@@ -4,38 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RTLDS</title>
+
+    <link rel="shortcut icon" type="image/png" href="{{url_for('static',filename='icon.png')}}">
+    <link rel= "stylesheet" type= "text/css" href="{{url_for('static',filename='styles.css')}}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
 </head>
-<body>
-    <h1> RTLDS </h1>
+<body onload="toggleMediaCanvas()"> <!-- Run JS function on page load -->
+    <main>
+        <section class="content">
+            <h1> RTLDS </h1>
+            <p>Real-Time Lane Detection System</p>
 
-    <form action="/imageUpload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" />
-        <input type="submit" value="Upload Image">
-    </form>
+            <button class="liveBTN" onclick="startLiveFeed()">Live Lane Detection</button>
 
-    <form action="/videoUpload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" />
-        <input type="submit" value="Upload Video">
-    </form>
+            <div class="showWrapper">
+                <button class="showBTN" onclick="toggleForm1()"><i class="material-symbols-outlined">photo_camera</i>Upload Picture</button>
+                <button class="showBTN" onclick="toggleForm2()"><i class="material-symbols-outlined">video_camera_back</i>Upload Video</button>
 
-    <button onclick="startLiveFeed()">Live Feed</button>
+            </div>
 
-    <form action="/clearData" method="post" enctype="multipart/form-data">
-        <input type="submit" value="Clear Data">
-    </form>
+            <div class="formWrapper">
+                <form class="uploadForm1" action="/imageUpload" method="post" enctype="multipart/form-data">
+                    <label class="selectBTN">
+                        <i class="material-symbols-outlined">cloud_upload</i>
+                        <input type="file" name="file" />
+                    </label>
+                    <input type="submit" value="Upload Image">
+                </form>
+            
+                <form class="uploadForm2" action="/videoUpload" method="post" enctype="multipart/form-data">
+                    <label class="selectBTN">
+                        <i class="material-symbols-outlined">cloud_upload</i>
+                        <input type="file" name="file" />
+                    </label>
+                    <input type="submit" value="Upload Video">
+                </form>
+            </div>
 
-    <img src="{{ url_for('static', filename='hold/'+imageURL)}}" alt="Image Feed"/>
+            <form action="/clearData" method="post" enctype="multipart/form-data">
+                <button class="deleteBTN" type="submit" onclick="clearData()"><i class="material-symbols-outlined">delete</i></button>
+            </form>
+        </section>
 
-    <video width="650" height="350" controls muted>
-        <source src="{{ url_for('static', filename='hold/'+videoURL)}}" type="video/mp4">
-    </video>
+        <section class="display">
+            <!-- Use src="{{ url_for('successLive') }}" if you want to use [POST]-->
+            <img id="liveFeedCanvas" src="" alt="Live Feed"/>
 
-    <!-- Use src="{{ url_for('successLive') }}" if you want to use [POST]-->
-    <img id="liveFeedCanvas" width="650" height="350" src="" alt="Live Feed"/>
+            <img id="imageCanvas" src="{{ url_for('static', filename='hold/'+imageURL)}}" alt="Image Feed"/>
+
+            <video id="videoCanvas" controls muted>
+                <source src="{{ url_for('static', filename='hold/'+videoURL)}}" type="video/mp4" alt="Video Feed"/>
+            </video>
+        </section>
+    </main>
 
     <script>
+        const uploadForm1 = document.querySelectorAll('.uploadForm1'); 
+        const uploadForm2 = document.querySelectorAll('.uploadForm2'); 
+
         function startLiveFeed(){
+            document.getElementById('liveFeedCanvas').style.display = 'grid';
             document.getElementById('liveFeedCanvas').src = '/liveFeed';
+            document.getElementById('imageCanvas').style.display = 'none';
+            document.getElementById('videoCanvas').style.display = 'none';
+        }
+
+        function toggleMediaCanvas(){
+            if ("{{display}}" == "1"){
+                document.getElementById('imageCanvas').style.display = 'grid';
+            } else if ("{{display}}" == "2"){
+                document.getElementById('videoCanvas').style.display = 'grid';
+            }
+        }
+
+        // querySelecter returns a dictionary. Use [0] to access correct element.
+        function toggleForm1(){
+            // Must set 'display' to same value 'display' has in CSS for .form1 (which is 'grid') to show.
+            // To automatically atlernative between toggle states, use if-statement with != operator
+            if (uploadForm1[0].style.display != 'grid') {
+                uploadForm1[0].style.display = 'grid'; 
+                uploadForm2[0].style.display = 'none'; 
+            } else {
+                uploadForm1[0].style.display = 'none'; 
+            }
+        }
+
+        function toggleForm2(){
+            if (uploadForm2[0].style.display != 'grid') {
+                uploadForm2[0].style.display = 'grid'; 
+                uploadForm1[0].style.display = 'none'; 
+            } else {
+                uploadForm2[0].style.display = 'none'; 
+            }
         }
     </script>
 </body>

@@ -1,0 +1,175 @@
+/* ----- GENERAL ----- */
+:root {
+    --bgColor: #131314;
+    --accent: #4874A7;
+    --primary: #1B1B1B;
+    --secondary: #2A2A2D; 
+    --special1: #FFFF;
+    --special2: #48A764;
+    --special3: #A74848;
+}
+
+body {
+    font-family: inter;
+    background-color: var(--bgColor);
+    margin-left: 100px;
+    margin-right: 100px;
+}
+
+i {
+    vertical-align: bottom; /*Icon positioning*/
+}
+
+/* ----- SECTION DIVISION ----- */
+main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 50px;
+}
+
+/* ----- CONTENT TITLE ----- */
+h1 {
+    font-size: 100px;
+    margin-bottom: -25px;
+    color: var(--special1);
+    font-weight: 400;
+}
+
+p {
+    color: var(--special1);
+    letter-spacing: 1.5px;
+}
+
+/* ----- MENU BUTTONS ----- */
+.liveBTN {
+    border: none;
+    background-color: var(--accent);
+    color: var(--primary);
+    font-size: 21px;
+    padding: 11px 10px;
+    text-align: center;
+    border-radius: 15px;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: inherit; /* To allow for variable font weights*/
+}
+
+.showWrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Can also do 0.25fr */
+    column-gap: 10px;
+    margin-bottom: 10px;
+}
+
+.showBTN {
+    border: none;
+    background-color: var(--primary);
+    font-weight: 500;
+    color: var(--accent);
+    font-size: 18px;
+    padding: 11px 10px;
+    text-align: center;
+    border-radius: 15px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+    font-family: inherit;
+}
+
+.deleteBTN {
+    color: var(--special3);
+    border: none;
+    border-radius: 15px;
+    background-color: var(--primary);
+    cursor: pointer;
+    padding: 10px;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 500;
+    font-size: 18px;
+    font-family: inherit;
+    position: fixed;
+    top: 455px;
+}
+
+/* ----- UPLOAD FORM ----- */
+.formWrapper form {
+    border: none;
+    background-color: var(--primary);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+    color: var(--special1);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 50px;
+}
+
+.formWrapper input[type=file]{
+    display: none;
+}
+
+.selectBTN {
+    border: none;
+    background-color: var(--secondary);
+    border-radius: 15px;
+    display: inline-block;
+    cursor: pointer;
+    width: 100%;
+
+    text-align: center;
+    padding: 8px;
+}
+
+.formWrapper input[type=submit]{
+    border: none;
+    background-color: var(--secondary);
+    font-weight: 500;
+    color: var(--special2);
+    font-size: 18px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 15px;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+    margin-top: 0;
+}
+
+/* ----- UPLOAD FORMS TOGGLE ----- */
+.formWrapper .uploadForm1 {
+    display: none;
+}
+
+.formWrapper .uploadForm2 {
+    display: none;
+}
+
+/* ----- DISPLAY SECTION ----- */
+.display {
+    margin-top: 100px;
+}
+
+#liveFeedCanvas {
+    display: none;
+    height: 400px;
+    width: 100%;
+    border-radius: 15px;
+}
+
+#imageCanvas {
+    display: none;
+    height: 400px;
+    width: 100%;
+    border-radius: 15px;
+}
+
+#videoCanvas {
+    display: none;
+    height: 400px;
+    width: 100%;
+    border-radius: 15px;
+}
+
+/* ----- END OF CODE ----- */

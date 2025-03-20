@@ -16,7 +16,7 @@ app.config['PROCESSED_FOLDER'] = holdFolderPath # Directory for processed images
 # Home page (With default value for HTML JINJA img src)
 @app.route("/")
 def home():
-    return render_template("index.html", imageURL="", videoURL="")
+    return render_template("index.html", imageURL="", videoURL="", display=0)
 
 # Route accessed if user uploads image (@"/success" must correspond with HTML form <action> value)
 @app.route("/imageUpload", methods=['POST'])
@@ -33,7 +33,7 @@ def successImage():
         filePathProcessed = os.path.join(app.config['PROCESSED_FOLDER'], 'savedImage.jpg')
         cv2.imwrite(filePathProcessed, imageLD)
 
-        return render_template("index.html", imageURL="savedImage.jpg", videoURL="")
+        return render_template("index.html", imageURL="savedImage.jpg", videoURL="", display=1)
 
 # Route (to page) accessed if user uploads video
 @app.route("/videoUpload", methods=['POST'])
@@ -50,7 +50,7 @@ def successVideo():
         # Generating new video (with processed frames)
         LD.videoProcessorWeb(filePathOriginal, filePathProcessed)
 
-        return render_template("index.html", imageURL="", videoURL="savedVideo.mp4")
+        return render_template("index.html", imageURL="", videoURL="savedVideo.mp4", display=2)
     
 # Response (Without re-route to page) for live camera feed
 @app.route("/liveFeed")
@@ -77,7 +77,7 @@ def clearData():
         if os.path.isfile(filePath):
             os.remove(filePath)
     
-    return render_template('index.html', imageURL="", videoURL="")
+    return render_template('index.html', imageURL="", videoURL="", display=0)
 
 if __name__ == "__main__":
     app.run(debug=True)
